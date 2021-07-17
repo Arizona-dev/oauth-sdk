@@ -205,20 +205,34 @@ function handleDCSuccess()
 	// response_type=code&scope=email%20identify
 	
 	// Get token from code
-	$result = file_get_contents('https://discord.com/api/oauth2/@me?'
-		. 'client_id=' . DC_CLIENT_ID
-		. '&client_secret=' . DC_CLIENT_SECRET
-		. '&redirect_uri=https://localhost/dc-success'
-		. '&response_type=code'
-		. '&scope=email%20identify'
-		. "&code=$code"
-	);
-    print_r($result);
+	// $result = file_get_contents('https://discord.com/oauth/token?'
+	// 	. 'client_id=' . DC_CLIENT_ID
+	// 	. '&client_secret=' . DC_CLIENT_SECRET
+	// 	. '&grant_type=authorization_code'
+	// 	. '&redirect_uri=https://localhost/dc-success'
+	// 	. '&response_type=code'
+	// 	. "&code=$code"
+	// );
+
+	// print_r($result);
     
 	// $token = json_decode($result, true)['access_token'];
-    
-	print_r('You are logged in with your discord account ! ');
-	// print_r($token);
+	// $token = json_decode($result, true)['access_token'];
+	
+	// Get user from token
+	$context = stream_context_create([
+		'http' => [
+			'method' => 'POST',
+			'Content-Type' => 'application/x-www-form-urlencoded'
+		]
+	]);
+	
+	// https://discord.com/developers/docs/topics/oauth2
+	$result = file_get_contents('https://discord.com/api/v8', false, $context);
+	$user = json_decode($result, true);
+	print_r('You are logged in with your Discord account ! ');
+	print_r($user);
+	print_r($result);
 }
 
 function handleError()
