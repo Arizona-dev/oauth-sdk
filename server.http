@@ -1,0 +1,45 @@
+### Variables
+@app = Test
+@state = azerty
+@client_id = client_60f324e98d1cb3.40889045
+@client_secret = 626fe6480483a000f2073f1a612944aacd6ae230
+@code = code_60f3251b45a12
+@token = token_60f3257d5d0cd1.23153189
+@username = john
+@password = doe
+@client = localhost
+@server = localhost:8081
+
+### 1 - Fixtures (create new user)
+GET http://{{server}}/fixtures
+
+### 2 - Register an app to the oauth server
+POST http://{{server}}/register
+Content-Type: application/x-www-form-urlencoded
+
+name={{app}}
+&uri=http://{{client}}
+&redirect_success=http://{{client}}/success
+&redirect_error=http://{{client}}/error
+
+### 3 - Prompt the user to authenticate or not
+GET http://{{server}}/auth?response_type=code&client_id={{client_id}}&scope=basic&state={{state}}
+
+### 4a - Accept the prompt and generate a code
+GET http://{{server}}/auth-yes?client_id={{client_id}}&state={{state}}
+
+### 4b - Refuse the prompt
+GET http://{{server}}/auth-no?client_id={{client_id}}&state={{state}}
+
+### 5a - Generate a token from the code
+GET http://{{server}}/token?grant_type=authorization_code&code={{code}}&client_id={{client_id}}&client_secret={{client_secret}}
+
+### 5b - Generate a token from the username / password
+GET http://{{server}}/token?grant_type=password&username={{username}}&password={{password}}&client_id={{client_id}}&client_secret={{client_secret}}
+
+### 5c - Generate a token from the credentials (client_id / client_secret)
+GET http://{{server}}/token?grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_secret}}
+
+### 6 - Call the API and show user data
+GET http://{{server}}/api
+Authorization: Bearer {{token}}

@@ -1,0 +1,1 @@
+a:6:{s:9:"client_id";s:30:"client_60f324e98d1cb3.40889045";s:13:"client_secret";s:40:"626fe6480483a000f2073f1a612944aacd6ae230";s:4:"name";s:4:"Test";s:3:"uri";s:16:"http://localhost";s:16:"redirect_success";s:24:"http://localhost/success";s:14:"redirect_error";s:22:"http://localhost/error";}
