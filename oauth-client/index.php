@@ -1,4 +1,7 @@
 <?php
+
+$rootURI = 'https://' . $_SERVER['SERVER_NAME'];
+
 // TODO create provider objets (clientId, clientSecret, redirectURI, authURL, userURL, perms)
 
 // Copy-paste from ../oauth-server/data/app.data 
@@ -9,11 +12,28 @@ const CLIENT_SECRET = '626fe6480483a000f2073f1a612944aacd6ae230';
 const FB_CLIENT_ID = '4497703600241793';
 const FB_CLIENT_SECRET = '3f53a8d7a73904209580cfb9e4f4360f';
 
+// const FB_PROVIDER = [
+// 	'grant_type' => 'authorization_code',
+// 	'clientId' => '4497703600241793',
+// 	'clientSecret' => '3f53a8d7a73904209580cfb9e4f4360f',
+// 	'redirectUri' => $rootURI. '/fb-success',
+// 	'scope' => 'openid email profile'
+// ];
+
+// const GG_PROVIDER = [
+// 	'response_type' => 'code',
+// 	'clientId' => '275057285715-irer1dk1h3bv2v8ci5ob4218kiialmrh.apps.googleusercontent.com',
+// 	'clientSecret' => 'AR4Skm7xvD875GXHUaKkO_nB',
+// 	'redirectUri' => $rootURI. '/gg-success',
+// 	'scope' => 'openid email profile',
+// 	'state' => $_SESSION['state']
+// ];
+
+const GG_CLIENT_ID = '275057285715-irer1dk1h3bv2v8ci5ob4218kiialmrh.apps.googleusercontent.com';
+const GG_CLIENT_SECRET = 'AR4Skm7xvD875GXHUaKkO_nB';
+
 const DC_CLIENT_ID = '866078579375997008';
 const DC_CLIENT_SECRET = 'YGsuyDLVsnTObG8OZxii0DYtTuiu9g-h';
-
-$googleClientID = '275057285715-irer1dk1h3bv2v8ci5ob4218kiialmrh.apps.googleusercontent.com';
-$googleClientSecret = 'AR4Skm7xvD875GXHUaKkO_nB';
  
 // This is the URL we'll send the user to first
 // to get their authorization
@@ -80,7 +100,7 @@ function handleHome()
 
 function handleLogin()
 {
-    $googleClientID = '275057285715-irer1dk1h3bv2v8ci5ob4218kiialmrh.apps.googleusercontent.com';
+    // $googleClientID = '275057285715-irer1dk1h3bv2v8ci5ob4218kiialmrh.apps.googleusercontent.com';
     $authorizeURL = 'https://accounts.google.com/o/oauth2/v2/auth';
     $baseURL = 'https://' . $_SERVER['SERVER_NAME']
     . '/gg-success';
@@ -94,7 +114,7 @@ function handleLogin()
     // Google params
     $params = array(
         'response_type' => 'code',
-        'client_id' => $googleClientID,
+        'client_id' => GG_CLIENT_ID,
         'redirect_uri' => $baseURL,
         'scope' => 'openid email profile',
         'state' => $_SESSION['state']
@@ -198,41 +218,70 @@ function handleGoogleSuccess() {
     }
 }
 
-function handleDCSuccess()
+function handleDCSuccess() {
+    $tokenURL = 'https://discord.com/api/oauth2/token';
+    $baseURL = 'https://' . $_SERVER['SERVER_NAME'] . '/dc-success';
+    $userURL = 'https://discord.com/api/users/@me';
+
+    if (isset($_GET['code'])) {    
+        // Exchange the authorization code for an access token
+        $ch = curl_init($tokenURL);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
+            'grant_type' => 'authorization_code',
+            'client_id' => DC_CLIENT_ID,
+            'client_secret' => DC_CLIENT_SECRET,
+            'redirect_uri' => $baseURL,
+            'code' => $_GET['code']
+        ]));
+
+        $token = json_decode(curl_exec($ch), true)['access_token'];
+
+		$context = stream_context_create([
+			'http' => [
+				'method' => 'GET',
+				'header' => "Authorization: Bearer $token"
+			]
+		]);
+
+		$result = file_get_contents($userURL, false, $context);
+		$user = json_decode($result, true);
+		var_dump($user);
+    }
+}
+
+// https://discord.com/developers/docs/topics/oauth2
+function handleDCSuccess0()
 {
 	['code' => $code, 'state' => $state] = $_GET;
 
-	// response_type=code&scope=email%20identify
-	
-	// Get token from code
-	// $result = file_get_contents('https://discord.com/oauth/token?'
-	// 	. 'client_id=' . DC_CLIENT_ID
-	// 	. '&client_secret=' . DC_CLIENT_SECRET
-	// 	. '&grant_type=authorization_code'
-	// 	. '&redirect_uri=https://localhost/dc-success'
-	// 	. '&response_type=code'
-	// 	. "&code=$code"
-	// );
+	$data = http_build_query([
+		'client_id' => DC_CLIENT_ID,
+		'client_secret' => DC_CLIENT_SECRET,
+		'grant_type' => 'authorization_code',
+		'redirect_uri' => 'https://localhost/dc-success',
+		'code' => $code
+	]);
 
-	// print_r($result);
-    
-	// $token = json_decode($result, true)['access_token'];
-	// $token = json_decode($result, true)['access_token'];
-	
-	// Get user from token
-	$context = stream_context_create([
+	$headers = [
 		'http' => [
 			'method' => 'POST',
-			'Content-Type' => 'application/x-www-form-urlencoded'
+			'header' => 'Content-type: application/x-www-form-urlencoded',
+			'content' => $data
 		]
-	]);
-	
-	// https://discord.com/developers/docs/topics/oauth2
-	$result = file_get_contents('https://discord.com/api/v8', false, $context);
-	$user = json_decode($result, true);
-	print_r('You are logged in with your Discord account ! ');
-	print_r($user);
+	];
+
+	$context = stream_context_create($headers);
+
+	$result = file_get_contents('https://discord.com/oauth2/token', false);
 	print_r($result);
+
+	$user = json_decode($result, true);
+	print_r($user);
+
+	print_r($_POST);
+
+	print_r('You are logged in with your Discord account ! ');
 }
 
 function handleError()
