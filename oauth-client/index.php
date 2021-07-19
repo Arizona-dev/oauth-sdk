@@ -2,32 +2,12 @@
 
 $rootURI = 'https://' . $_SERVER['SERVER_NAME'];
 
-// TODO create provider objets (clientId, clientSecret, redirectURI, authURL, userURL, perms)
-
-// Copy-paste from ../oauth-server/data/app.data 
 const CLIENT_ID = 'client_60f324e98d1cb3.40889045';
 const CLIENT_SECRET = '626fe6480483a000f2073f1a612944aacd6ae230';
 
 // https://developers.facebook.com/apps
 const FB_CLIENT_ID = '4497703600241793';
 const FB_CLIENT_SECRET = '3f53a8d7a73904209580cfb9e4f4360f';
-
-// const FB_PROVIDER = [
-// 	'grant_type' => 'authorization_code',
-// 	'clientId' => '4497703600241793',
-// 	'clientSecret' => '3f53a8d7a73904209580cfb9e4f4360f',
-// 	'redirectUri' => $rootURI. '/fb-success',
-// 	'scope' => 'openid email profile'
-// ];
-
-// const GG_PROVIDER = [
-// 	'response_type' => 'code',
-// 	'clientId' => '275057285715-irer1dk1h3bv2v8ci5ob4218kiialmrh.apps.googleusercontent.com',
-// 	'clientSecret' => 'AR4Skm7xvD875GXHUaKkO_nB',
-// 	'redirectUri' => $rootURI. '/gg-success',
-// 	'scope' => 'openid email profile',
-// 	'state' => $_SESSION['state']
-// ];
 
 const GG_CLIENT_ID = '275057285715-irer1dk1h3bv2v8ci5ob4218kiialmrh.apps.googleusercontent.com';
 const GG_CLIENT_SECRET = 'AR4Skm7xvD875GXHUaKkO_nB';
